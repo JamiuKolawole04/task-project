@@ -19,6 +19,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Auth routes
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
+
+    Route::get('/tasks', [TaskController::class, 'index']);
+
     
 
     Route::middleware('admin')->group(function () {
