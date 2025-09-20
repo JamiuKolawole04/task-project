@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Validator;
 
 class TaskController extends Controller
 {
-    
     public function index()
    {
         $tasks = Task::with('creator')
