@@ -236,57 +236,57 @@ class AuthManager {
 
     if (!tasks || tasks.length === 0) {
       container.innerHTML = `
-                <div class="text-center text-white/60 py-8">
-                    <i class="fas fa-tasks text-2xl"></i>
-                    <p class="mt-2">No tasks available</p>
-                    <p class="text-sm">Contact an admin to create tasks</p>
-                </div>
-            `;
+      <div class="text-center text-white/60 py-8">
+        <i class="fas fa-tasks text-2xl"></i>
+        <p class="mt-2">No tasks available</p>
+        <p class="text-sm">Contact an admin to create tasks</p>
+      </div>
+    `;
       return;
     }
+
+    // Store tasks for later use in modals
+    this.availableTasks = tasks;
 
     container.innerHTML = tasks
       .map(
         (task) => `
-            <div class="bg-white/10 border border-white/20 rounded-lg p-6 hover:bg-white/20 transition card-hover">
-                <div class="flex justify-between items-start mb-4">
-                    <div class="flex-1">
-                        <h4 class="text-lg font-semibold text-white mb-2">
-                            <i class="fas fa-clipboard-list mr-2"></i>${this.escapeHtml(
-                              task.title
-                            )}
-                        </h4>
-                        <p class="text-white/80 mb-3">${this.escapeHtml(
-                          task.description
-                        )}</p>
-                        <div class="flex items-center space-x-4 text-sm text-white/60">
-                            <span>
-                                <i class="fas fa-calendar-plus mr-1"></i>Created: ${new Date(
-                                  task.created_at
-                                ).toLocaleDateString()}
-                            </span>
-                            <span class="bg-blue-500/20 text-blue-200 px-2 py-1 rounded">
-                                <i class="fas fa-users mr-1"></i>${
-                                  task.lists_count || 0
-                                } total lists
-                            </span>
-                        </div>
-                    </div>
-                    <div class="flex space-x-2 ml-4">
-                        <button onclick="showCreateListModal(); document.getElementById('listTaskSelect').value='${
-                          task.id
-                        }'" 
-                                class="bg-green-500 text-white px-3 py-2 rounded hover:bg-green-600 transition">
-                            <i class="fas fa-plus mr-1"></i>Add List
-                        </button>
-                    </div>
-                </div>
+        <div class="bg-white/10 border border-white/20 rounded-lg p-6 hover:bg-white/20 transition card-hover">
+          <div class="flex justify-between items-start mb-4">
+            <div class="flex-1">
+              <h4 class="text-lg font-semibold text-white mb-2">
+                <i class="fas fa-clipboard-list mr-2"></i>${this.escapeHtml(
+                  task.title
+                )}
+              </h4>
+              <p class="text-white/80 mb-3">${this.escapeHtml(
+                task.description
+              )}</p>
+              <div class="flex items-center space-x-4 text-sm text-white/60">
+                <span>
+                  <i class="fas fa-calendar-plus mr-1"></i>Created: ${new Date(
+                    task.created_at
+                  ).toLocaleDateString()}
+                </span>
+                <span class="bg-blue-500/20 text-blue-200 px-2 py-1 rounded">
+                  <i class="fas fa-users mr-1"></i>${
+                    task.lists_count || 0
+                  } total lists
+                </span>
+              </div>
             </div>
-        `
+            <div class="flex space-x-2 ml-4">
+              <button onclick="showCreateListModalForTask(${task.id})" 
+                      class="bg-green-500 text-white px-3 py-2 rounded hover:bg-green-600 transition">
+                <i class="fas fa-plus mr-1"></i>Add List
+              </button>
+            </div>
+          </div>
+        </div>
+      `
       )
       .join("");
   }
-
   // User lists UI
   updateUserListsUI(lists) {
     const container = document.getElementById("user-lists-container");

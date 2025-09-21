@@ -80,7 +80,6 @@ function showToast(message, type = "info", duration = 4000) {
   toast.classList.add("translate-x-0");
 
   // For errors, also add to DOM temporarily so you can inspect it
-
   if (type === "error") {
     const errorDiv = document.createElement("div");
     errorDiv.id = "debug-error";
