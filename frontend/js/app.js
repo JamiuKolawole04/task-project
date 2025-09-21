@@ -332,3 +332,67 @@ if (
     showLoading,
   };
 }
+
+document.addEventListener("keydown", (e) => {
+  // Escape key to close modals
+  if (e.key === "Escape") {
+    const modal = document.getElementById("createListModal");
+    if (modal && !modal.classList.contains("hidden")) {
+      hideCreateListModal();
+    }
+  }
+
+  // Ctrl/Cmd + N to create new task (admin) or list (user)
+  if ((e.ctrlKey || e.metaKey) && e.key === "n") {
+    e.preventDefault();
+
+    if (authManager.isAuthenticated()) {
+      if (authManager.isAdmin()) {
+        document.getElementById("taskTitle")?.focus();
+      } else {
+        showCreateListModal();
+      }
+    }
+  }
+
+  // Ctrl/Cmd + S to save form (if modal is open)
+  if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+    const modal = document.getElementById("createListModal");
+    if (modal && !modal.classList.contains("hidden")) {
+      e.preventDefault();
+      const form = document.getElementById("createListForm");
+      if (form) {
+        form.dispatchEvent(new Event("submit"));
+      }
+    }
+  }
+});
+
+// Add double-click to complete/uncomplete lists
+function setupListInteractions() {
+  document.addEventListener("dblclick", (e) => {
+    // Check if double-clicked element is part of a list item
+    const listItem = e.target.closest(".bg-white\\/5");
+    if (listItem && authManager.isAuthenticated() && !authManager.isAdmin()) {
+      // Extract list ID from onclick attribute of complete button
+      const completeBtn = listItem.querySelector(
+        '[onclick*="toggleListCompletion"]'
+      );
+      if (completeBtn) {
+        const onclickAttr = completeBtn.getAttribute("onclick");
+        const matches = onclickAttr.match(
+          /toggleListCompletion\((\d+),\s*(true|false)\)/
+        );
+        if (matches) {
+          const listId = parseInt(matches[1]);
+          const currentStatus = matches[2] === "true";
+          userManager.toggleListCompletion(listId, currentStatus);
+        }
+      }
+    }
+  });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  setupListInteractions();
+});

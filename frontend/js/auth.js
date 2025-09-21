@@ -294,49 +294,93 @@ class AuthManager {
 
     if (!lists || lists.length === 0) {
       container.innerHTML = `
-                <div class="text-center text-white/60 py-8">
-                    <i class="fas fa-list text-2xl"></i>
-                    <p class="mt-2">No lists found</p>
-                    <p class="text-sm">Create your first list!</p>
-                </div>
-            `;
+      <div class="text-center text-white/60 py-8">
+        <i class="fas fa-list text-2xl"></i>
+        <p class="mt-2">No lists found</p>
+        <p class="text-sm">Create your first list!</p>
+      </div>
+    `;
       return;
     }
+
+    // Store lists for later use
+    this.availableLists = lists;
 
     container.innerHTML = lists
       .map(
         (list) => `
-            <div class="bg-white/5 border border-white/10 rounded p-3 hover:bg-white/10 transition">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-3 flex-1">
-                        <i class="fas ${
-                          list.completed
-                            ? "fa-check-circle text-green-400"
-                            : "fa-circle text-gray-400"
-                        }"></i>
-                        <div class="flex-1 ${
-                          list.completed ? "opacity-60 line-through" : ""
-                        }">
-                            <h5 class="text-white font-medium">${this.escapeHtml(
-                              list.title
-                            )}</h5>
-                            ${
-                              list.description
-                                ? `<p class="text-white/70 text-sm mt-1">${this.escapeHtml(
-                                    list.description
-                                  )}</p>`
-                                : ""
-                            }
-                            <div class="text-xs text-white/50 mt-2">
-                                <i class="fas fa-calendar mr-1"></i>${new Date(
-                                  list.created_at
-                                ).toLocaleDateString()}
-                            </div>
-                        </div>
-                    </div>
+        <div class="bg-white/5 border border-white/10 rounded-lg p-4 hover:bg-white/10 transition">
+          <div class="flex items-start justify-between">
+            <div class="flex items-start space-x-3 flex-1">
+              <button 
+                onclick="userManager.toggleListCompletion(${list.id}, ${
+          list.completed
+        })"
+                class="mt-1 transition-colors duration-200 hover:scale-110"
+              >
+                <i class="fas ${
+                  list.completed
+                    ? "fa-check-circle text-green-400 hover:text-green-300"
+                    : "fa-circle text-gray-400 hover:text-gray-300"
+                } text-lg"></i>
+              </button>
+              <div class="flex-1 ${list.completed ? "opacity-60" : ""}">
+                <div class="flex items-center space-x-2 mb-1">
+                  <h5 class="text-white font-medium ${
+                    list.completed ? "line-through" : ""
+                  }">${this.escapeHtml(list.title)}</h5>
+                  ${
+                    list.completed
+                      ? '<span class="bg-green-500/20 text-green-300 px-2 py-1 rounded-full text-xs">✓ Completed</span>'
+                      : '<span class="bg-yellow-500/20 text-yellow-300 px-2 py-1 rounded-full text-xs">• Pending</span>'
+                  }
                 </div>
+                ${
+                  list.description
+                    ? `<p class="text-white/70 text-sm mt-1 ${
+                        list.completed ? "line-through" : ""
+                      }">${this.escapeHtml(list.description)}</p>`
+                    : ""
+                }
+                <div class="flex items-center space-x-4 text-xs text-white/50 mt-2">
+                  <span>
+                    <i class="fas fa-calendar mr-1"></i>${new Date(
+                      list.created_at
+                    ).toLocaleDateString()}
+                  </span>
+                  ${
+                    list.task
+                      ? `<span class="bg-blue-500/20 text-blue-300 px-2 py-1 rounded">
+                           <i class="fas fa-tasks mr-1"></i>${this.escapeHtml(
+                             list.task.title
+                           )}
+                         </span>`
+                      : ""
+                  }
+                </div>
+              </div>
             </div>
-        `
+            <div class="flex space-x-1 ml-2">
+              <button 
+                onclick="userManager.editList(${list.id})"
+                class="bg-blue-500/80 hover:bg-blue-500 text-white p-2 rounded transition"
+                title="Edit list"
+              >
+                <i class="fas fa-edit text-sm"></i>
+              </button>
+              <button 
+                onclick="userManager.deleteList(${list.id}, '${this.escapeHtml(
+          list.title
+        )}')"
+                class="bg-red-500/80 hover:bg-red-500 text-white p-2 rounded transition"
+                title="Delete list"
+              >
+                <i class="fas fa-trash text-sm"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      `
       )
       .join("");
   }

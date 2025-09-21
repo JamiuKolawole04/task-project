@@ -86,6 +86,139 @@ class UserManager {
       showLoading(false);
     }
   }
+
+  async toggleListCompletion(listId, currentStatus) {
+    try {
+      showLoading(true);
+
+      // Find the list to get current data
+      const list = authManager.availableLists?.find((l) => l.id === listId);
+      if (!list) {
+        throw new Error("List not found");
+      }
+
+      const updateData = {
+        title: list.title,
+        description: list.description || "",
+        completed: !currentStatus,
+      };
+
+      await api.updateList(listId, updateData);
+
+      showToast(
+        `List marked as ${!currentStatus ? "completed" : "incomplete"}!`,
+        "success"
+      );
+
+      // Refresh the user data
+      await authManager.loadUserData();
+    } catch (error) {
+      console.error("Toggle list completion failed:", error);
+      showToast("Failed to update list: " + error.message, "error");
+    } finally {
+      showLoading(false);
+    }
+  }
+
+  async deleteList(listId, listTitle) {
+    if (!confirm(`Are you sure you want to delete "${listTitle}"?`)) {
+      return;
+    }
+
+    try {
+      showLoading(true);
+      await api.deleteList(listId);
+      showToast("List deleted successfully!", "success");
+
+      // Refresh the user data
+      await authManager.loadUserData();
+    } catch (error) {
+      console.error("Delete list failed:", error);
+      showToast("Failed to delete list: " + error.message, "error");
+    } finally {
+      showLoading(false);
+    }
+  }
+
+  editList(listId) {
+    const list = authManager.availableLists?.find((l) => l.id === listId);
+    if (!list) {
+      showToast("List not found", "error");
+      return;
+    }
+
+    this.editingList = list;
+
+    // Pre-populate the form with existing data
+    document.getElementById("listTaskSelect").value = list.task_id;
+    document.getElementById("listTitle").value = list.title;
+    document.getElementById("listDescription").value = list.description || "";
+
+    // Change modal title and button text
+    const modalTitle = document.querySelector("#createListModal h3");
+    const submitBtn = document.querySelector(
+      '#createListForm button[type="submit"]'
+    );
+
+    if (modalTitle) {
+      modalTitle.innerHTML = '<i class="fas fa-edit mr-2"></i>Edit List';
+    }
+
+    if (submitBtn) {
+      submitBtn.innerHTML = '<i class="fas fa-save mr-2"></i>Update';
+      submitBtn.classList.remove("bg-green-500", "hover:bg-green-600");
+      submitBtn.classList.add("bg-blue-500", "hover:bg-blue-600");
+    }
+
+    // Show the modal
+    showCreateListModal();
+
+    showToast("Edit mode activated", "info");
+  }
+
+  async updateList(listId, formData) {
+    try {
+      showLoading(true);
+      await api.updateList(listId, formData);
+      showToast("List updated successfully!", "success");
+
+      // Refresh the user data
+      await authManager.loadUserData();
+
+      // Close modal and reset form
+      hideCreateListModal();
+      this.resetEditMode();
+
+      return;
+    } catch (error) {
+      console.error("Update list failed:", error);
+      showToast("Failed to update list: " + error.message, "error");
+      throw error;
+    } finally {
+      showLoading(false);
+    }
+  }
+
+  resetEditMode() {
+    this.editingList = null;
+
+    // Reset modal title and button
+    const modalTitle = document.querySelector("#createListModal h3");
+    const submitBtn = document.querySelector(
+      '#createListForm button[type="submit"]'
+    );
+
+    if (modalTitle) {
+      modalTitle.innerHTML =
+        '<i class="fas fa-plus-circle mr-2"></i>Create New List';
+    }
+
+    if (submitBtn) {
+      submitBtn.innerHTML = '<i class="fas fa-plus mr-2"></i>Create';
+      submitBtn.classList.remove("bg-blue-500", "hover:bg-blue-600");
+      submitBtn.classList.add("bg-green-500", "hover:bg-green-600");
+    }
+  }
 }
 
 // Modal functions
@@ -107,10 +240,14 @@ function hideCreateListModal() {
   document.getElementById("createListModal").classList.add("hidden");
   document.body.style.overflow = "auto";
 
-  // Reset form
+  // Reset form and edit mode
   const form = document.getElementById("createListForm");
   if (form) {
     form.reset();
+  }
+
+  if (userManager) {
+    userManager.resetEditMode();
   }
 }
 
@@ -123,7 +260,7 @@ function escapeHtml(text) {
 
 const userManager = new UserManager();
 
-//form handler for creating lists
+// Form handler for creating/updating lists
 document.addEventListener("DOMContentLoaded", function () {
   const createListForm = document.getElementById("createListForm");
   if (createListForm) {
@@ -157,7 +294,14 @@ document.addEventListener("DOMContentLoaded", function () {
         description: description || "",
       };
 
-      await userManager.createList(formData);
+      // Check if we're editing or creating
+      if (userManager.editingList) {
+        // Add completed status for updates
+        formData.completed = userManager.editingList.completed;
+        await userManager.updateList(userManager.editingList.id, formData);
+      } else {
+        await userManager.createList(formData);
+      }
     });
   }
 });
