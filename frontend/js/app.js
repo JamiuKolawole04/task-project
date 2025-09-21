@@ -79,28 +79,30 @@ function showToast(message, type = "info", duration = 4000) {
   toast.classList.remove("translate-x-full");
   toast.classList.add("translate-x-0");
 
-  // For errors, also add to DOM temporarily so you can inspect it
-  if (type === "error") {
-    const errorDiv = document.createElement("div");
-    errorDiv.id = "debug-error";
-    errorDiv.style.cssText =
-      "position:fixed;top:100px;right:20px;background:red;color:white;padding:20px;z-index:9999;max-width:400px;border-radius:8px;";
-    errorDiv.innerHTML = `
-            <strong>DEBUG ERROR:</strong><br>
-            ${message}<br>
-            <button onclick="document.getElementById('debug-error').remove()" 
-                    style="background:white;color:black;padding:5px 10px;margin-top:10px;border:none;border-radius:4px;cursor:pointer;">
-                Close
-            </button>
-        `;
-    document.body.appendChild(errorDiv);
+  // For errors, also add to DOM temporarily
+  // for development purpose
+  // uncomment in development and commeent back once done
+  // if (type === "error") {
+  //   const errorDiv = document.createElement("div");
+  //   errorDiv.id = "debug-error";
+  //   errorDiv.style.cssText =
+  //     "position:fixed;top:100px;right:20px;background:red;color:white;padding:20px;z-index:9999;max-width:400px;border-radius:8px;";
+  //   errorDiv.innerHTML = `
+  //           <strong>DEBUG ERROR:</strong><br>
+  //           ${message}<br>
+  //           <button onclick="document.getElementById('debug-error').remove()"
+  //                   style="background:white;color:black;padding:5px 10px;margin-top:10px;border:none;border-radius:4px;cursor:pointer;">
+  //               Close
+  //           </button>
+  //       `;
+  //   document.body.appendChild(errorDiv);
 
-    // Auto remove after 15 seconds
-    setTimeout(() => {
-      const debugError = document.getElementById("debug-error");
-      if (debugError) debugError.remove();
-    }, 15000);
-  }
+  //   // Auto remove after 15 seconds
+  //   setTimeout(() => {
+  //     const debugError = document.getElementById("debug-error");
+  //     if (debugError) debugError.remove();
+  //   }, 15000);
+  // }
 
   // Hide toast after duration
   setTimeout(() => {
